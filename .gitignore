@@ -1,0 +1,9 @@
+# Ignore the folder containing virtual environment files
+geoinfoproj/
+
+# Ignore Python cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
