@@ -9,7 +9,7 @@ Follow the steps below to set up the project:
 1. Clone the repository:
     ```bash
     git clone https://github.com/AriannaBoisseau/geoinfo_project.git
-    cd geoinformatics_project
+    cd geoinfo_project
     ```
 
 2. Create a virtual environment (optional but recommended):
