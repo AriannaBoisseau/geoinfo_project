@@ -1,19 +1,17 @@
 import math as m
 import numpy as np
-import matplotlib.pyplot as plt
-import pandas as pd
-import geopandas as gpd
-import scipy as sp
 
-def compute_clock_offset(t, dt0, dt1, dt2):
+from almanac_constants import AlmanacConstants as ac
+
+def compute_clock_offset(t):
     clock_offsets = []
     
     for t_i in t:
-        clock_offsets.append(dt0 + dt1 * t_i + dt2 * t_i**2)
+        clock_offsets.append(ac.dt0 + ac.dt1 * t_i + ac.dt2 * t_i**2)
 
     return clock_offsets
 
-def ecc_anomaly(M, e):
+def ecc_anomaly(M):
     E = M
 
     max_iter = 12
@@ -23,7 +21,7 @@ def ecc_anomaly(M, e):
 
     while ((dE > 1e-12) and (i < max_iter)):
         E_tmp = E
-        E = M + e * np.sin(E)
+        E = M + ac.e * np.sin(E)
         dE = np.mod(E - E_tmp, 2 * np.pi)
         i = i + 1
 
@@ -34,25 +32,25 @@ def ecc_anomaly(M, e):
 
     return E
 
-def compute_ITRF_satellite_position(GMe, a, e, M0, Omega0, OmegaEdot, Omegadot, i0, idot, w0, wdot, t):
+def compute_ITRF_satellite_position(t):
     coord_ORS = []
     coord_ITRF = []
 
     # compute mean motion
-    n = m.sqrt(GMe / a**3)
+    n = m.sqrt(ac.GMe / ac.a**3)
 
     for t_i in t:
         # compute mean anomaly
-        M = M0 + n * t_i
+        M = ac.M0 + n * t_i
 
         # compute eccentric anomaly
-        eta = ecc_anomaly(M, e)
+        eta = ecc_anomaly(M)
 
         # Compute psi
-        psi = m.atan2((m.sqrt(1 - e**2) * m.sin(eta)), (m.cos(eta) - e))
+        psi = m.atan2((m.sqrt(1 - ac.e**2) * m.sin(eta)), (m.cos(eta) - ac.e))
 
         # Compute radius r
-        r = (a * (1 - e**2)) / (1 + (e * m.cos(psi)))
+        r = (ac.a * (1 - ac.e**2)) / (1 + (ac.e * m.cos(psi)))
 
         # Compute the coordinates of the satellite in ORS and store it in coord_ORS
         xORS = r * m.cos(psi)
@@ -60,9 +58,9 @@ def compute_ITRF_satellite_position(GMe, a, e, M0, Omega0, OmegaEdot, Omegadot, 
         zORS = 0
         coord_ORS.append(np.array([[xORS], [yORS], [zORS]]))
         # Compute rotation angles omega, i, OMEGA
-        omega = w0 + (wdot * t_i)
-        i = i0 + (idot * t_i)
-        OMEGA = Omega0 + ((Omegadot - OmegaEdot) * t_i)
+        omega = ac.w0 + (ac.wdot * t_i)
+        i = ac.i0 + (ac.idot * t_i)
+        OMEGA = ac.Omega0 + ((ac.Omegadot - ac.OmegaEdot) * t_i)
         # Compute the rotation matrices required to transform from ORS to ITRF
         # R(-omega(t))
         Romega = np.array([[np.cos(-omega), np.sin(-omega), 0], [-np.sin(-omega), np.cos(-omega), 0], [0, 0, 1]])
