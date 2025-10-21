@@ -23,6 +23,7 @@ all_data = pd.DataFrame(columns=['time', 'x_cart', 'y_cart', 'z_cart', 'lat', 'l
 all_data['integer_ambiguity'] = np.full(86400, 100)
 
 # gaussian noise
+np.random.seed(42) # for reproducibility
 all_data['noise'] = np.random.normal(0, 1, 86400)
 
 # lambda (widelane)
@@ -283,6 +284,8 @@ max_index = all_data['distance'].idxmax()
 
 print(f"Min distance: {min_distance} at time {min_index} seconds")
 print(f"Max distance: {max_distance} at time {max_index} seconds")
+
+print(f"\n{'='*60}")
 
 """Exporting dataframes and observations to csv"""
 print("Exporting dataframes and observations to csv...".ljust(80), end='', flush=True)
