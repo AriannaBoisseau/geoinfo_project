@@ -7,7 +7,7 @@ import scipy as sp
 
 def plot_clock_offsets(all_data):
     fig, ax = plt.subplots(figsize=(10,6))
-    ax.set(xlabel='Seconds in a day', ylabel='Clock-offset', title = "Clock offsets")
+    ax.set(xlabel='Seconds in a day', ylabel='Clock-offset [s]', title = "Clock offsets")
     ax.plot(all_data['time'], all_data['clock_offset'], '-', color='blue')
     plt.show() # uncomment to show the plot
 
@@ -46,19 +46,6 @@ def plot_satellite_trajectory_with_visibility(world, gdf, all_data, latitude_T, 
     # Add legend
     ax.legend()
 
-    plt.show()
-
-def plot_satellite_distance(t_hours, all_data, t_visible_hours, satellite_distances_visible, avg_satellite_distance):
-    # Plot both
-    plt.figure(figsize=(12, 6))
-    plt.plot(t_hours, all_data['distance'], 'r-', label='Not visible')  # red line for full distance
-    plt.plot(t_visible_hours, satellite_distances_visible, 'g-', linewidth=2, label='Visible')  # green overlay
-    plt.xlabel("Time [hours]")
-    plt.ylabel("Distance from Earth's Center [m]")
-    plt.title(f"Satellite Distance Over Time with Visibility - Average distance: {avg_satellite_distance} [m]")
-    plt.xlim(0, 24)
-    plt.grid(True)
-    plt.legend()
     plt.show()
 
 def plot_elevation(all_data, min_elevation, elevations):

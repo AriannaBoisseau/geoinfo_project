@@ -1,5 +1,6 @@
 import math as m
 import numpy as np
+import pyproj as pp
 
 from almanac_constants import AlmanacConstants as ac
 
@@ -214,3 +215,13 @@ def compute_elevation_azimuth(sat_cart, user_cart, user_lat, user_lon):
         azimuth += 360
 
     return elevation, azimuth, distance
+
+def compute_ITRF_rover(latitude, longitude, height):
+    crsIN = pp.CRS.from_epsg(4326)
+    crsOUT = pp.CRS.from_epsg(4978)
+
+    trf = pp.Transformer.from_crs(crsIN, crsOUT, always_xy=True)
+
+    coord_ITRF = trf.transform(longitude, latitude, height)
+
+    return np.array([[coord_ITRF[0]], [coord_ITRF[1]], [coord_ITRF[2]]])

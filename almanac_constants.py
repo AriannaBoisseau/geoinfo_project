@@ -1,4 +1,4 @@
-# Almanac constants of satellite SVN 63, PRN 01 (Block IIR) for 2016
+# Almanac constants of satellite SVN 63, PRN 01 (Block IIR) for 2016, 11, 28
 
 class AlmanacConstants:
     dt0 = -7.661711424589e-05

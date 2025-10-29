@@ -127,28 +127,7 @@ plot_visibility(t_hours, visibility)
 plot_satellite_trajectory_with_visibility(world, gdf, all_data, latitude_T, longitude_T)
 
 print('done.')
-"""Computing distance between satellite and ground station over time"""
 
-print("Computing distance between satellite and ground station over time...".ljust(80), end='', flush=True)
-
-# Compute total distances
-all_data['distance'] = [np.linalg.norm(coord) for coord in coord_ITRF]
-
-
-# Extract visible portions
-satellite_distances_visible = []
-t_visible_hours = []
-
-for i in range(len(visibility)):
-    if visibility[i]:
-        satellite_distances_visible.append(all_data['distance'][i])
-        t_visible_hours.append(t_hours[i])
-
-avg_satellite_distance = np.mean(satellite_distances_visible)
-
-plot_satellite_distance(t_hours, all_data, t_visible_hours, satellite_distances_visible, avg_satellite_distance)
-
-print('done.')
 """Plotting elevation for visible timewindow"""
 print("Plotting elevation for visible timewindow...".ljust(80), end='', flush=True)
 
@@ -226,6 +205,23 @@ print(f"Min distance: {min_distance} at time {min_index} seconds")
 print(f"Max distance: {max_distance} at time {max_index} seconds")
 
 print(f"\n{'='*60}")
+
+"""Computing distance between satellite and ground station over time"""
+
+print("Computing distance between satellite and ground station over time...".ljust(80), end='', flush=True)
+
+# Extract visible portions
+satellite_distances_visible = []
+t_visible_hours = []
+
+for i in range(len(visibility)):
+    if visibility[i]:
+        satellite_distances_visible.append(all_data['distance'][i])
+        t_visible_hours.append(t_hours[i])
+
+avg_satellite_distance = np.mean(satellite_distances_visible)
+
+print('done.')
 
 """Exporting dataframes and observations to csv"""
 print("Exporting dataframes and observations to csv...".ljust(80), end='', flush=True)
