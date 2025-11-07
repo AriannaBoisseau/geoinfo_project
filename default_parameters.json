@@ -1,0 +1,12 @@
+{
+    "integer_ambiguity": 100,
+    "clock_offset_mean": 0.0,
+    "clock_offset_std": 1.0,
+    "fundamental_frequency": 10.23,
+    "frequency_multiplier_L1": 154,
+    "frequency_multiplier_L2": 120,
+    "ground_station_latitude": -18.1553985,
+    "ground_station_longitude": 49.4098352,
+    "ground_station_altitude": 0.0,
+    "minimum_elevation_angle": 0.0
+}
