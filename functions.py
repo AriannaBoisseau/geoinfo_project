@@ -1,5 +1,6 @@
 import math as m
 import numpy as np
+import pandas as pd
 import pyproj as pp
 
 from almanac_constants import AlmanacConstants as ac
@@ -225,3 +226,92 @@ def compute_ITRF_rover(latitude, longitude, height):
     coord_ITRF = trf.transform(longitude, latitude, height)
 
     return np.array([[coord_ITRF[0]], [coord_ITRF[1]], [coord_ITRF[2]]])
+
+def itrf_to_geodetic(df_ITRF):
+    """
+    Given a DataFrames with ITRF coordinates [X, Y, Z] in meters,
+    return three DataFrames: latitude, longitude, and height.
+
+    Parameters:
+    - df_ITRF: DataFrame with columns ['X', 'Y', 'Z']
+
+    Returns:
+    - lat_df: DataFrame with column ['latitude']
+    - lon_df: DataFrame with column ['longitude']
+    - h_df: DataFrame with column ['height']
+    """
+    # Create transformer from ITRF (ECEF XYZ) to WGS84 geographic (lat/lon/height)
+    transformer = pp.Transformer.from_crs("EPSG:4978", "EPSG:4326", always_xy=True)
+
+    X = df_ITRF['X'].values
+    Y = df_ITRF['Y'].values
+    Z = df_ITRF['Z'].values
+
+    # Perform the transformation
+    lon, lat, h = transformer.transform(X, Y, Z)
+
+    # Create separate output DataFrames
+    lat_df = pd.DataFrame(lat, columns=['latitude'])
+    lon_df = pd.DataFrame(lon, columns=['longitude'])
+    h_df = pd.DataFrame(h, columns=['height'])
+
+    return lat_df, lon_df, h_df
+
+def computing_satellite_data(param):
+    satellite_data = pd.DataFrame()
+    satellite_data['time'] = list(range(0, param['epochs'], 1))
+    satellite_data['integer_ambiguity'] = np.full(param['epochs'], param['integer_ambiguity'])
+    np.random.seed(42) 
+    satellite_data['noise'] = np.random.normal(param['clock_offset_mean'], param['clock_offset_std'], param['epochs'])
+    satellite_data['clock_offset'] = compute_clock_offset(satellite_data['time'])
+    coord_ITRF_list = compute_ITRF_satellite_position(satellite_data['time'])
+    ITRF_matrix = np.concatenate(coord_ITRF_list).reshape(-1, 3)
+    satellite_data['x_cart'] = ITRF_matrix[:, 0]
+    satellite_data['y_cart'] = ITRF_matrix[:, 1]
+    satellite_data['z_cart'] = ITRF_matrix[:, 2]
+    X_coords, Y_coords, Z_coords = ITRF_matrix.T
+    df_ITRF = pd.DataFrame({
+        'X': X_coords,
+        'Y': Y_coords,
+        'Z': Z_coords
+    })
+    lat_df, lon_df, h_df = itrf_to_geodetic(df_ITRF)
+
+    satellite_data['lat'] = lat_df['latitude']
+    satellite_data['long'] = lon_df['longitude']
+    satellite_data['height'] = h_df['height']
+
+    return satellite_data, ITRF_matrix
+
+def compute_visibility_df(satellite_df, gs_lat, gs_lon, gs_alt):
+    """
+    Compute visibility DataFrame for the satellite from a ground station.
+
+    Parameters:
+    - satellite_df: DataFrame with satellite data including 'lat', 'long', 'height'
+    - gs_lat: Latitude of the ground station in degrees
+    - gs_lon: Longitude of the ground station in degrees
+    - gs_alt: Altitude of the ground station in meters
+
+    Returns:
+    - visibility_df: DataFrame with a 'visibility' column (True/False)
+    """
+    latitude_T = gs_lat
+    longitude_T = gs_lon
+    height_T = gs_alt
+
+    observer_coords = (latitude_T, longitude_T, height_T)
+
+    latitudes = satellite_df['lat'].values
+    longitudes = satellite_df['long'].values
+    heights = satellite_df['height'].values
+
+    visibility = []
+
+    for lat, lon, h in zip(latitudes, longitudes, heights):
+        sat_coords = (lat, lon, h) 
+        visibility.append(is_satellite_visible(sat_coords, observer_coords))
+
+    visibility_df = pd.DataFrame(visibility, columns=['visibility'])
+
+    return visibility_df
