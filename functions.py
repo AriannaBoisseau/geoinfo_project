@@ -2,6 +2,7 @@ import math as m
 import numpy as np
 import pandas as pd
 import pyproj as pp
+import scipy as sp
 
 from almanac_constants import AlmanacConstants as ac
 
@@ -294,7 +295,7 @@ def compute_visibility_df(satellite_df, gs_lat, gs_lon, gs_alt):
     - gs_alt: Altitude of the ground station in meters
 
     Returns:
-    - visibility_df: DataFrame with a 'visibility' column (True/False)
+    - satellite_df: original DataFrame with a 'visibility' column (True/False) added
     """
     latitude_T = gs_lat
     longitude_T = gs_lon
@@ -311,7 +312,40 @@ def compute_visibility_df(satellite_df, gs_lat, gs_lon, gs_alt):
     for lat, lon, h in zip(latitudes, longitudes, heights):
         sat_coords = (lat, lon, h) 
         visibility.append(is_satellite_visible(sat_coords, observer_coords))
+    satellite_df['visibility'] = visibility
 
-    visibility_df = pd.DataFrame(visibility, columns=['visibility'])
+    return satellite_df
 
-    return visibility_df
+def compute_observations(df, lambda_val):
+    """
+    Compute the observation based on the given frequency.
+
+    Parameters:
+    - df: DataFrame with satellite data including 'clock_offset', 'integer_ambiguity', 'noise', 'distance'
+    - lambda_val: Wavelength in meters 
+
+    Returns:
+    - observations: DataFrame with columns 'epoch', 'phase'
+    """
+
+    observations = pd.DataFrame(columns=['epoch', 'phase'])
+    observations['epoch'] = df['time']
+    observations['phase'] = df['distance'] * 1000 + df['clock_offset'] * sp.constants.speed_of_light + df['noise'] + df['integer_ambiguity'] * lambda_val
+
+    return observations
+
+def compute_wavelength(fun_freq, f_mult):
+    """
+    Compute the wavelength based on the frequency multiplier.
+    
+    Parameters:
+    - fun_freq: Fundamental frequency in Hz (e.g., 10.23e6 Hz)
+    - f_mult: Frequency multiplier (e.g., 154 for L1, 120 for L2)
+    
+    Returns:
+    - wavelength: Wavelength in meters
+    """
+    frequency = fun_freq * f_mult
+    c = sp.constants.speed_of_light
+    wavelength = c / frequency
+    return wavelength
