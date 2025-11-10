@@ -26,6 +26,8 @@ if st.session_state.params_selection == 'Upload Custom Parameters File':
         params_data = json.load(uploaded_file)
 
         show_map(params_data.get('ground_station_latitude'), params_data.get('ground_station_longitude'))
+
+        show_computation_button()
    
 
 elif st.session_state.params_selection == 'Input Manually':
@@ -42,7 +44,6 @@ elif st.session_state.params_selection == 'Input Manually':
     st.number_input('Altitude of ground station (meters)', min_value=0.0, value=default_params.get('ground_station_altitude'), step=1.0, key='ground_station_altitude')
     st.number_input('Minimum Elevation Angle (degrees)', min_value=0.0, max_value=90.0, value=default_params.get('minimum_elevation_angle'), step=1.0, key='minimum_elevation_angle')
 
-    show_map(
-        st.session_state.ground_station_latitude,
-        st.session_state.ground_station_longitude
-    )
+    show_map(st.session_state.ground_station_latitude, st.session_state.ground_station_longitude)
+
+    show_computation_button()
