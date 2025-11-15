@@ -15,8 +15,12 @@ def show_map(lat, lon):
 
 def show_computation_button():
     if st.button('Compute observations'):
-        st.info('The computation has started. Please wait...')
-        run_simulation()
+        with st.spinner(text="The computation has started. Please wait...", show_time=True):
+            try:
+                run_simulation()
+            except Exception as e:
+                st.error(f'An error occurred during computation: {e}')
+                return
         st.success('Computation completed! Click below to download the output files.')
 
         with open('output/L1_observations.csv', 'rb') as f1, open('output/L2_observations.csv', 'rb') as f2:
