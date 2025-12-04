@@ -349,3 +349,128 @@ def compute_wavelength(fun_freq, f_mult):
     c = sp.constants.speed_of_light
     wavelength = c / frequency
     return wavelength
+
+
+def iono_phase_correction(lat, lon, az, el, time, ionoparams, frequency='L1'):
+    """
+    Compute ionospheric phase correction using Klobuchar model.
+    
+    Parameters
+    ----------
+    lat : float
+        Receiver latitude in degrees
+    lon : float
+        Receiver longitude in degrees
+    az : float
+        Satellite azimuth in degrees
+    el : float
+        Satellite elevation in degrees
+    time : float
+        GPS time of week in seconds
+    ionoparams : list or array
+        Ionospheric parameters [alpha0, alpha1, alpha2, alpha3, beta0, beta1, beta2, beta3]
+    frequency : str, optional
+        Carrier frequency ('L1', 'L2', or 'L5'). Default is 'L1'.
+        Can also be a float value in Hz.
+    
+    Returns
+    -------
+    phase_correction : float
+        Ionospheric phase correction in meters (to be SUBTRACTED from phase measurement)
+    
+    Notes
+    -----
+    - The phase correction has OPPOSITE sign compared to pseudorange correction
+    - The correction is frequency-dependent
+    - For L1: phase_correction = -pseudorange_correction
+    - For other frequencies: scaled by (f/f1)^2
+    """
+    
+    # Constants
+    c = 299792458  # Speed of light in m/s
+    
+    # GNSS carrier frequencies in Hz
+    frequencies = {
+        'L1': 1575.42e6,  # GPS L1
+        'L2': 1227.60e6,  # GPS L2
+        'L5': 1176.45e6,  # GPS L5
+    }
+    
+    # Get frequency value
+    if isinstance(frequency, str):
+        if frequency.upper() not in frequencies:
+            raise ValueError(f"Unknown frequency band: {frequency}. Use 'L1', 'L2', 'L5', or provide frequency in Hz")
+        freq = frequencies[frequency.upper()]
+    else:
+        freq = frequency  # Assume it's already in Hz
+    
+    f1 = frequencies['L1']  # Reference frequency
+    
+    # Ionospheric parameters
+    a0, a1, a2, a3, b0, b1, b2, b3 = ionoparams
+    
+    # Elevation from 0 to 90 degrees
+    el = np.abs(el)
+    
+    # Conversion to semicircles
+    lat_sc = lat / 180
+    lon_sc = lon / 180
+    az_sc = az / 180
+    el_sc = el / 180
+    
+    # Earth-centered angle (elevation angle)
+    psi = (0.0137 / (el_sc + 0.11)) - 0.022
+    
+    # Geodetic latitude of the ionospheric pierce point
+    phi = lat_sc + psi * np.cos(az_sc * np.pi)
+    
+    # Limit latitude to ±76 degrees (±0.416 semicircles)
+    if phi > 0.416:
+        phi = 0.416
+    elif phi < -0.416:
+        phi = -0.416
+    
+    # Geodetic longitude of the ionospheric pierce point
+    lambda_ = lon_sc + (psi * np.sin(az_sc * np.pi)) / np.cos(phi * np.pi)
+    
+    # Geomagnetic latitude of the ionospheric pierce point
+    phi_m = phi + 0.064 * np.cos((lambda_ - 1.617) * np.pi)
+    
+    # Local time at the ionospheric pierce point (seconds)
+    t = lambda_ * 43200 + time
+    
+    # Ensure time is within [0, 86400) seconds
+    if t >= 86400:
+        t -= 86400
+    elif t < 0:
+        t += 86400
+    
+    # Slant factor (obliquity factor)
+    F = 1 + 16 * (0.53 - el_sc) ** 3
+    
+    # Amplitude of the cosine curve (seconds)
+    A = a0 + a1 * phi_m + a2 * phi_m**2 + a3 * phi_m**3
+    A = np.where(A < 0, 0, A)
+    
+    # Period of the cosine curve (seconds)
+    P = b0 + b1 * phi_m + b2 * phi_m**2 + b3 * phi_m**3
+    P = np.where(P < 72000, 72000, P)
+    
+    # Phase of the cosine curve (radians)
+    X = (2 * np.pi * (t - 50400)) / P
+    
+    # Ionospheric time delay (seconds) for L1
+    if np.abs(X) < 1.57:
+        T_iono = F * (5e-9 + A * (1 - X**2/2 + X**4/24))
+    else:
+        T_iono = F * 5e-9
+    
+    # Convert to distance (pseudorange correction in meters)
+    pseudorange_correction = c * T_iono
+    
+    # Compute phase correction (opposite sign, frequency dependent)
+    # Phase advancement = -pseudorange delay * (f/f1)^2
+    frequency_factor = (freq / f1) ** 2
+    phase_correction = -pseudorange_correction * frequency_factor
+    
+    return phase_correction
