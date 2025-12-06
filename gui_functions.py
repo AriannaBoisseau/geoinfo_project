@@ -1,8 +1,10 @@
 import json
 import streamlit as st
 import pandas as pd
+from threading import RLock
 
 from main_functionalities import run_simulation
+from plots import plot_L1_L2
 
 def show_map(lat, lon):
     st.subheader('Ground Station Location')
@@ -17,22 +19,31 @@ def show_computation_button():
     if st.button('Compute observations'):
         with st.spinner(text="The computation has started. Please wait...", show_time=True):
             try:
-                run_simulation()
+                L1, L2 = run_simulation()
             except Exception as e:
                 st.error(f'An error occurred during computation: {e}')
                 return
         st.success('Computation completed! Click below to download the output files.')
 
         with open('output/L1_observations.csv', 'rb') as f1, open('output/L2_observations.csv', 'rb') as f2:
-            st.download_button(
-                label='Download L1 Observations',
-                data=f1,
-                file_name='L1_observations.csv',
-                mime='text/csv'
-            )
-            st.download_button(
-                label='Download L2 Observations',
-                data=f2,
-                file_name='L2_observations.csv',
-                mime='text/csv'
-            )
+            col1, col2 = st.columns(2)
+            with col1:
+                st.download_button(
+                    label='Download L1 Observations',
+                    data=f1,
+                    file_name='L1_observations.csv',
+                    mime='text/csv'
+                )
+            with col2:
+                st.download_button(
+                    label='Download L2 Observations',
+                    data=f2,
+                    file_name='L2_observations.csv',
+                    mime='text/csv'
+                )
+        
+        fig = plot_L1_L2(L1, L2)
+        _lock = RLock()
+
+        with _lock:
+            st.pyplot(fig)
