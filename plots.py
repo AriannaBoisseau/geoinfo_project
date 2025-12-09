@@ -85,3 +85,13 @@ def plot_differences(differences):
     plt.ylabel('Distance (m)')
     plt.title('Differences between consecutive epochs')
     plt.show()
+
+def plot_L1_L2(L1, L2):
+    fig = plt.figure(figsize=(12, 6))
+    plt.plot(range(len(L1)), L1['phase'], '-', color='blue', linewidth=1, label='L1 Observations')
+    plt.plot(range(len(L2)), L2['phase'], '-', color='orange', linewidth=1, label='L2 Observations')
+    plt.xlabel('Time (seconds)')
+    plt.ylabel('Distance (meters)')
+    plt.title('L1 and L2 Observations')
+    plt.legend()
+    return fig

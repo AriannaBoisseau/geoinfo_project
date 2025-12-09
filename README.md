@@ -23,6 +23,12 @@ Follow the steps below to set up the project:
     pip install -r requirements.txt
     ```
 
+## Graphical User Interface (GUI)
+To run the GUI for cycle slip simulation and identification, execute the following command in your terminal:
+```bash
+streamlit run gui.py
+```
+
 ## Requirements
 
 The `requirements.txt` file contains all the dependencies needed for the project.

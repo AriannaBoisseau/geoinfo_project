@@ -1,0 +1,13 @@
+{
+    "epochs": 86400,
+    "integer_ambiguity": 100,
+    "clock_offset_mean": 0.0,
+    "clock_offset_std": 1e-03,
+    "fundamental_frequency": 10.23,
+    "frequency_multiplier_L1": 154,
+    "frequency_multiplier_L2": 120,
+    "ground_station_latitude": 45.4685,
+    "ground_station_longitude": 9.1824,
+    "ground_station_altitude": 0.0,
+    "minimum_elevation_angle": 0.0
+}   

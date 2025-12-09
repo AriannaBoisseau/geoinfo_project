@@ -9,32 +9,31 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import geopandas as gpd
 import scipy as sp
+import json
 
 # import functions
 from functions import *
 from plots import *
-from almanac_constants import AlmanacConstants as ac
 
-print("Initializing variables...".ljust(80), end='', flush=True)
+print('Importing default parameters and initializing variables ...'.ljust(80), end='', flush=True)
+with open('default_parameters.json', 'r') as file:
+    param = json.load(file)
 
 # dataframe containing all values, exported as a csv at the end of the processing
-all_data = pd.DataFrame(columns=['time', 'x_cart', 'y_cart', 'z_cart', 'lat', 'long', 'height', 'clock_offset', 'integer_ambiguity', 'noise','visibility', 'distance'])
+all_data = pd.DataFrame(columns=['time', 'x_cart', 'y_cart', 'z_cart', 'lat', 'long', 'height', 'clock_offset', 'integer_ambiguity', 'noise', 'visibility', 'distance'])
 
 # integer ambiguity
-all_data['integer_ambiguity'] = np.full(86400, 100)
+all_data['integer_ambiguity'] = np.full(param['epochs'], param['integer_ambiguity'])
 
 # gaussian noise
 np.random.seed(42) # for reproducibility
-all_data['noise'] = np.random.normal(0, 1, 86400)
+all_data['noise'] = np.random.normal(param['clock_offset_mean'], param['clock_offset_std'], param['epochs'])
 
 # lambda (widelane)
 lambda_wl = 0.5
 
 # Create a list containing all the epochs
-t_start = 0
-t_end = 3600 * 24
-t_step = 1
-all_data['time'] = list(range(t_start, t_end, t_step))
+all_data['time'] = list(range(0, param['epochs'], 1))
 
 print('done.')
 """
@@ -76,9 +75,9 @@ for v in range (len(coord_geod)):
     longs.append(coord_geod[v][1])
     heights.append(coord_geod[v][2])
 
-all_data['lat'] = lats
-all_data['long'] = longs
-all_data['height'] = heights
+all_data['lat'] = [float(lat.item()) if isinstance(lat, np.ndarray) else float(lat) for lat in lats]
+all_data['long'] = [float(lon.item()) if isinstance(lon, np.ndarray) else float(lon) for lon in longs]
+all_data['height'] = [float(hgt.item()) if isinstance(hgt, np.ndarray) else float(hgt) for hgt in heights]
 
 print('done.')
 """
@@ -104,10 +103,10 @@ print('done.')
 Cheching observability period for a ground station located in Toamasina (Madagascar)
 """
 print("Cheching observability period in Toamasina...".ljust(80), end='', flush=True)
-# Location: Toamasina
-latitude_T = -18.1553985
-longitude_T = 49.4098352
-height_T = 0 # (in meters)
+
+latitude_T = param['ground_station_latitude']
+longitude_T = param['ground_station_longitude']
+height_T = param['ground_station_altitude']
 
 observer_coords = (latitude_T, longitude_T, height_T)
 
@@ -136,7 +135,7 @@ user_cart = geod2Cart(latitude_T, longitude_T, height_T)
 
 # Find visibility periods (continuous segments above minimum elevation)
 
-min_elevation = 0 # Degree
+min_elevation = param['minimum_elevation_angle']
 
 visibility_periods = []
 visible_times = []
@@ -158,6 +157,8 @@ for i, t_i in enumerate(all_data['time']):
 
 all_data['distance'] = distances
 
+t_step = 1  # seconds
+
 if visible_times:
     period_start = visible_times[0]
     period_end = visible_times[0]
@@ -176,7 +177,7 @@ if visible_times:
 print(f"\n{'='*60}")
 print(f"SATELLITE VISIBILITY ANALYSIS")
 print(f"{'='*60}")
-print(f"Location: Toamasina, Madagascar")
+# print(f"Location: Toamasina, Madagascar")
 print(f"Coordinates: {latitude_T:.4f}°, {longitude_T:.4f}°")
 print(f"\nNumber of visibility periods: {len(visibility_periods)}")
 print(f"Total visible time: {len(visible_times)} seconds ({len(visible_times)/3600:.2f} hours)")
@@ -234,10 +235,10 @@ visible_epoch = all_data[all_data['visibility'] == True]
 
 visible_epoch.to_csv('output/visible_epoch.csv', index=False)
 
-# distance(km) * 1000 + clock_offset * c + noise / 1000 + integer_ambiguity * lambda_wl
+# distance(km) * 1000 + clock_offset * c + noise + integer_ambiguity * lambda_wl
 observations = pd.DataFrame(columns=['phase'])
 
-observations['phase'] = visible_epoch['distance'] * 1000 + visible_epoch['clock_offset'] * sp.constants.speed_of_light + visible_epoch['noise'] / 1000 + visible_epoch['integer_ambiguity'] * lambda_wl
+observations['phase'] = visible_epoch['distance'] * 1000 + visible_epoch['clock_offset'] * sp.constants.speed_of_light + visible_epoch['noise'] + visible_epoch['integer_ambiguity'] * lambda_wl
 
 observations.to_csv('output/observations.csv', index=False)
 
