@@ -333,7 +333,7 @@ def compute_observations(df, lambda_val, lat, lon, ionoparams, frequency, f1):
 
     observations = pd.DataFrame(columns=['epoch', 'phase'])
     observations['epoch'] = df['time']
-    observations['phase'] = df['distance'] * 1000 + df['clock_offset'] * sp.constants.speed_of_light + df['noise'] + df['integer_ambiguity'] * lambda_val - ionospheric_correction
+    observations['phase'] = df['distance'] * 1000 + df['clock_offset'] * sp.constants.speed_of_light + df['noise'] + df['integer_ambiguity'] * lambda_val + ionospheric_correction
 
     return observations
 
