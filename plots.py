@@ -78,20 +78,35 @@ def plot_observations(observations):
     plt.title('Satellite distance from user only for visible epoch')
     plt.show()
 
-def plot_differences(differences):
-    plt.figure(figsize=(12, 6))
-    plt.plot(range(53491, 79962, 1), differences, '-', color='blue', linewidth=1)
+def plot_differences(observations, title_text, color):
+    differences = pd.DataFrame()
+    differences['epoch'] = observations['epoch']
+    differences['diff'] = observations['phase'].diff()
+    fig = plt.figure(figsize=(12, 6))
+    plt.plot(differences['epoch'], differences['diff'], '-', color=color, linewidth=1)
     plt.xlabel('Time (seconds)')
     plt.ylabel('Distance (m)')
-    plt.title('Differences between consecutive epochs')
-    plt.show()
+    plt.title(title_text)
+    return fig, differences
 
 def plot_L1_L2(L1, L2):
     fig = plt.figure(figsize=(12, 6))
-    plt.plot(range(len(L1)), L1['phase'], '-', color='blue', linewidth=1, label='L1 Observations')
-    plt.plot(range(len(L2)), L2['phase'], '-', color='orange', linewidth=1, label='L2 Observations')
+    plt.plot(L1['epoch'], L1['phase'], '-', color='blue', linewidth=1, label='L1 Observations')
+    plt.plot(L2['epoch'], L2['phase'], '-', color='orange', linewidth=1, label='L2 Observations')
     plt.xlabel('Time (seconds)')
     plt.ylabel('Distance (meters)')
     plt.title('L1 and L2 Observations')
     plt.legend()
     return fig
+
+def plot_diff_of_diff(diff1, diff2):
+    fig = plt.figure(figsize=(12, 6))
+    diff_of_diff = pd.DataFrame()
+    diff_of_diff['epoch'] = diff1['epoch']
+    diff_of_diff['diff'] = diff1['diff'] - diff2['diff']
+    plt.plot(diff_of_diff['epoch'], diff_of_diff['epoch'], '-', color='green', linewidth=1, label='Difference of Differences')
+    plt.xlabel('Time (seconds)')
+    plt.ylabel('Distance (meters)')
+    plt.title('Difference of Differences between L1 and L2 Observations')
+    plt.legend()
+    return fig, diff_of_diff              

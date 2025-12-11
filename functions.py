@@ -470,7 +470,7 @@ def iono_phase_correction(lat, lon, az, el, time, ionoparams, frequency, f1):
     
     # Compute phase correction (opposite sign, frequency dependent)
     # Phase advancement = -pseudorange delay * (f/f1)^2
-    frequency_factor = (frequency / f1) ** 2
+    frequency_factor = (frequency / f1) ** 2 # TODO DA INVERTIRE
     phase_correction = -pseudorange_correction * frequency_factor
     
     return phase_correction

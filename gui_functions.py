@@ -4,7 +4,7 @@ import pandas as pd
 from threading import RLock
 
 from main_functionalities import run_simulation
-from plots import plot_L1_L2
+from plots import plot_L1_L2, plot_differences, plot_diff_of_diff
 
 def show_map(lat, lon):
     st.subheader('Ground Station Location')
@@ -42,8 +42,19 @@ def show_computation_button():
                     mime='text/csv'
                 )
         
-        fig = plot_L1_L2(L1, L2)
+        l1_and_l2 = plot_L1_L2(L1, L2)
+        plot_diff1, diff1 = plot_differences(L1, 'Differences in L1 Observations', 'blue')
+        plot_diff2, diff2 = plot_differences(L2, 'Differences in L2 Observations', 'orange')
+        plot_diff, _ = plot_diff_of_diff(diff1, diff2)
         _lock = RLock()
 
         with _lock:
-            st.pyplot(fig)
+            st.pyplot(l1_and_l2)
+            col1, col2 = st.columns(2)
+            with col1:
+                st.pyplot(plot_diff1)
+            with col2:
+                st.pyplot(plot_diff2)
+
+            st.pyplot(plot_diff)
+
