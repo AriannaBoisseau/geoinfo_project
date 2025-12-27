@@ -16,10 +16,11 @@ def show_map(lat, lon):
     st.map(df)
 
 def show_computation_button():
-    if st.button('Compute observations'):
+    if st.button('Compute observations', width='stretch'):
         with st.spinner(text="The computation has started. Please wait...", show_time=True):
             try:
                 L1, L2 = run_simulation()
+                st.session_state['computation_done'] = True
             except Exception as e:
                 st.error(f'An error occurred during computation: {e}')
                 return

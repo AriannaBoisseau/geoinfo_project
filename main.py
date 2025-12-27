@@ -27,7 +27,7 @@ all_data['integer_ambiguity'] = np.full(param['epochs'], param['integer_ambiguit
 
 # gaussian noise
 np.random.seed(42) # for reproducibility
-all_data['noise'] = np.random.normal(param['clock_offset_mean'], param['clock_offset_std'], param['epochs'])
+all_data['noise'] = np.random.normal(0, param['clock_offset_std'], param['epochs'])
 
 # lambda (widelane)
 lambda_wl = 0.5

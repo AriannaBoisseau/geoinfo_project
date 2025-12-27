@@ -263,7 +263,7 @@ def computing_satellite_data(param):
     satellite_data['time'] = list(range(0, param['epochs'], 1))
     satellite_data['integer_ambiguity'] = np.full(param['epochs'], param['integer_ambiguity'])
     np.random.seed(42) 
-    satellite_data['noise'] = np.random.normal(param['clock_offset_mean'], param['clock_offset_std'], param['epochs'])
+    satellite_data['noise'] = np.random.normal(0, param['clock_offset_std'], param['epochs'])
     satellite_data['clock_offset'] = compute_clock_offset(satellite_data['time'])
     coord_ITRF_list = compute_ITRF_satellite_position(satellite_data['time'])
     ITRF_matrix = np.concatenate(coord_ITRF_list).reshape(-1, 3)
