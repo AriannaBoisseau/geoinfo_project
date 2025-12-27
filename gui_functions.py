@@ -16,24 +16,29 @@ def show_map(lat, lon):
     st.map(df)
 
 def show_computation_button():
-    if st.session_state.get('computation_running') == False:
+    if st.session_state.get('computation_running') == False and st.session_state.get('computation_done') == False:
         if st.button('Compute observations', key='compute_button', use_container_width=True):
             st.session_state['computation_running'] = True
-            st.session_state['sidebar_closed'] = True
-            st.set_page_config(initial_sidebar_state='collapsed')
             st.rerun()
 
     if st.session_state.get('computation_running') == True:
         with st.spinner(text="The computation has started. Please wait...", show_time=True):
             try:
                 L1, L2 = run_simulation()
+                st.session_state['L1_observations'] = L1
+                st.session_state['L2_observations'] = L2
                 st.session_state['computation_running'] = False
                 st.session_state['computation_done'] = True
             except Exception as e:
                 st.error(f'An error occurred during computation: {e}')
                 st.session_state['computation_running'] = False
                 return
+
+
+    if st.session_state.get('computation_done') == True:
         st.success('Computation completed successfully!')
+        L1 = st.session_state['L1_observations']
+        L2 = st.session_state['L2_observations']
 
         col1, col2 = st.columns(2)
         with col1:

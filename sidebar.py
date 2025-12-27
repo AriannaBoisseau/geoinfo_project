@@ -54,9 +54,15 @@ def render_sidebar():
                 st.session_state.ground_station_longitude = params_data.get('ground_station_longitude', 0.0)
 
         elif st.session_state.input_method == 'Enter Manually':
+            if st.session_state.get('computation_running') == True:
+                st.session_state.expand_satellite_params = False
+                st.session_state.expand_frequency_params = False
+                st.session_state.expand_ground_station_params = False
+                st.session_state.expand_other_params = False
+
             with open('default_parameters.json', 'r') as file:
                 default_params = json.load(file)
-            with st.expander('Satellite Parameters', expanded=True):
+            with st.expander('Satellite Parameters', expanded=st.session_state.get('expand_satellite_params', True)):
                 st.subheader('Keplerian Orbit Parameters')
                 col1, col2 = st.columns(2)
                 with col1:
@@ -83,7 +89,7 @@ def render_sidebar():
                 st.subheader('Other Satellite Parameters')
                 st.number_input('Integer Ambiguity Value', min_value=0, value=default_params.get('integer_ambiguity'), step=1, key='integer_ambiguity')
 
-            with st.expander('Frequency Parameters', expanded=True):
+            with st.expander('Frequency Parameters', expanded=st.session_state.get('expand_frequency_params', True)):
                 col1, col2, col3 = st.columns(3)
                 with col1:
                     st.number_input('Fundamental frequency (MHz)', min_value=0.0, value=default_params.get('fundamental_frequency'), step=0.01, key='fundamental_frequency')
@@ -92,7 +98,7 @@ def render_sidebar():
                 with col3:
                     st.number_input('Frequency multiplier for L2', min_value=0, value=default_params.get('frequency_multiplier_L2'), step=1, key='frequency_multiplier_L2')
                 
-            with st.expander('Ground Station Parameters', expanded=True):
+            with st.expander('Ground Station Parameters', expanded=st.session_state.get('expand_ground_station_params', True)):
                 st.subheader('Clock Offset')
                 st.number_input('dt0', min_value=None, max_value=None, value=default_params.get('dt0'), step=None, format='%e')
                 st.number_input('dt1', min_value=None, max_value=None, value=default_params.get('dt1'), step=None, format='%e') 
@@ -110,7 +116,7 @@ def render_sidebar():
                 with col2:
                     st.number_input('Minimum Elevation Angle (degrees)', min_value=0.0, max_value=90.0, value=default_params.get('minimum_elevation_angle'), step=1.0, key='minimum_elevation_angle')
 
-            with st.expander('Other Simulation Parameters', expanded=True):
+            with st.expander('Other Simulation Parameters', expanded=st.session_state.get('expand_other_params', True)):
                 st.number_input('Simulation Duration (seconds)', min_value=1, value=default_params.get('epochs'), step=1, key='epochs')
                 st.number_input('Earth\'s Standard Gravitational Parameter', min_value=None, max_value=None, value=default_params.get('GMe'), step=None, format='%e', key='GMe')
                 st.number_input('Earth\'s Angular Velocity', min_value=None, max_value=None, value=default_params.get('OmegaEdot'), step=None, format='%e', key='OmegaEdot')
