@@ -16,7 +16,7 @@ def render_sidebar():
         if 'input_method' in st.session_state and st.session_state.input_method != 'Not Selected':
             if st.button('Change Input Method (all parameters will be lost)', width='stretch'):
                 for key in list(st.session_state.keys()):
-                    if key not in ['sidebar_state', 'computation_done']:
+                    if key not in ['sidebar_state']:
                         del st.session_state[key]
                 st.session_state.input_method = 'Not Selected'
                 st.rerun()

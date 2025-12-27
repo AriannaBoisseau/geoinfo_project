@@ -78,7 +78,7 @@ def plot_observations(observations):
     plt.title('Satellite distance from user only for visible epoch')
     plt.show()
 
-def plot_differences(observations, title_text, color):
+def plot_differences(observations, color):
     differences = pd.DataFrame()
     differences['epoch'] = observations['epoch']
     differences['diff'] = observations['phase'].diff()
@@ -86,7 +86,6 @@ def plot_differences(observations, title_text, color):
     plt.plot(differences['epoch'], differences['diff'], '-', color=color, linewidth=1)
     plt.xlabel('Time (seconds)')
     plt.ylabel('Distance (m)')
-    plt.title(title_text)
     return fig, differences
 
 def plot_L1_L2(L1, L2):
@@ -95,7 +94,6 @@ def plot_L1_L2(L1, L2):
     plt.plot(L2['epoch'], L2['phase'], '-', color='orange', linewidth=1, label='L2 Observations')
     plt.xlabel('Time (seconds)')
     plt.ylabel('Distance (meters)')
-    plt.title('L1 and L2 Observations')
     plt.legend()
     return fig
 
@@ -107,6 +105,5 @@ def plot_diff_of_diff(diff1, diff2):
     plt.plot(diff_of_diff['epoch'], diff_of_diff['epoch'], '-', color='green', linewidth=1, label='Difference of Differences')
     plt.xlabel('Time (seconds)')
     plt.ylabel('Distance (meters)')
-    plt.title('Difference of Differences between L1 and L2 Observations')
     plt.legend()
     return fig, diff_of_diff              

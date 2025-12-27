@@ -16,15 +16,50 @@ def show_map(lat, lon):
     st.map(df)
 
 def show_computation_button():
-    if st.button('Compute observations', width='stretch'):
+    if st.session_state.get('computation_running') == False:
+        if st.button('Compute observations', key='compute_button', use_container_width=True):
+            st.session_state['computation_running'] = True
+            st.session_state['sidebar_closed'] = True
+            st.set_page_config(initial_sidebar_state='collapsed')
+            st.rerun()
+
+    if st.session_state.get('computation_running') == True:
         with st.spinner(text="The computation has started. Please wait...", show_time=True):
             try:
                 L1, L2 = run_simulation()
+                st.session_state['computation_running'] = False
                 st.session_state['computation_done'] = True
             except Exception as e:
                 st.error(f'An error occurred during computation: {e}')
+                st.session_state['computation_running'] = False
                 return
-        st.success('Computation completed! Click below to download the output files.')
+        st.success('Computation completed successfully!')
+
+        col1, col2 = st.columns(2)
+        with col1:
+            st.metric('L1 Observations Generated', f"{len(L1)} epochs")
+        with col2:
+            st.metric('L2 Observations Generated', f"{len(L2)} epochs")
+        
+        l1_and_l2 = plot_L1_L2(L1, L2)
+        plot_diff1, diff1 = plot_differences(L1, 'blue')
+        plot_diff2, diff2 = plot_differences(L2, 'orange')
+        plot_diff, _ = plot_diff_of_diff(diff1, diff2)
+        _lock = RLock()
+
+        with _lock:
+            st.subheader('L1 and L2 Observations')
+            st.pyplot(l1_and_l2)
+            col1, col2 = st.columns(2)
+            with col1:
+                st.subheader('Differences in L1 Observations')
+                st.pyplot(plot_diff1)
+            with col2:
+                st.subheader('Differences in L2 Observations')
+                st.pyplot(plot_diff2)
+
+            st.subheader('Difference of Differences between L1 and L2 Observations')
+            st.pyplot(plot_diff)
 
         with open('output/L1_observations.csv', 'rb') as f1, open('output/L2_observations.csv', 'rb') as f2:
             col1, col2 = st.columns(2)
@@ -42,20 +77,3 @@ def show_computation_button():
                     file_name='L2_observations.csv',
                     mime='text/csv'
                 )
-        
-        l1_and_l2 = plot_L1_L2(L1, L2)
-        plot_diff1, diff1 = plot_differences(L1, 'Differences in L1 Observations', 'blue')
-        plot_diff2, diff2 = plot_differences(L2, 'Differences in L2 Observations', 'orange')
-        plot_diff, _ = plot_diff_of_diff(diff1, diff2)
-        _lock = RLock()
-
-        with _lock:
-            st.pyplot(l1_and_l2)
-            col1, col2 = st.columns(2)
-            with col1:
-                st.pyplot(plot_diff1)
-            with col2:
-                st.pyplot(plot_diff2)
-
-            st.pyplot(plot_diff)
-
