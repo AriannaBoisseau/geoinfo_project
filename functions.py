@@ -474,3 +474,37 @@ def iono_phase_correction(lat, lon, az, el, time, ionoparams, frequency, f1):
     phase_correction = -pseudorange_correction * frequency_factor
     
     return phase_correction
+
+def clock_offset_generator(frequency, number, epochs):
+    '''
+    Compute when and how long will the cycle slip be
+
+    Input: 
+    - Frequency: L1, L2 GNSS frequency
+    - Number: Number of cycle slips   
+    - Epochs: Time 
+
+    Return: List of (time, slip_magnitude) tuples 
+    '''
+
+    if frequency.upper() == "L1" :
+        wavelength = compute_wavelength(10.23e6, 154)
+    elif frequency.upper() == "L2":
+        wavelength = compute_wavelength(10.23e6, 120)
+
+    number = 1 # To test 
+
+    # Generate random cycle slip times within duration
+    slip_time = np.sort(np.random.uniform(0, epochs, number))
+
+    # Generate random integer cycle slips 
+    slip_duration = np.random.uniform(1, epochs, number)
+
+    # Convert to phase offset in meters
+    slip_offsets = slip_duration * wavelength
+
+    # Return as list of (time, offset) tuples for easy application
+    cycle_slips = [(slip_time[i], slip_offsets[i]) for i in range(number)]
+    
+    return cycle_slips
+
