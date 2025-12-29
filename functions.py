@@ -475,27 +475,33 @@ def iono_phase_correction(lat, lon, az, el, time, ionoparams, frequency, f1):
     
     return phase_correction
 
-def cycle_slip_generator(frequency, number, epochs):
+def cycle_slip_generator(frequency, observation, epochs):
     '''
     Compute when and how long will the cycle slip be
 
     Input: 
-    - Frequency: L1, L2 GNSS frequency
-    - Number: Number of cycle slips   
-    - Epochs: Time 
+    - Frequency: 1 for L1, 2 for L2 (integer)
+    - observation: Dataframe with 'phase' columns for observations
+    - epochs: Array or list of epoch indices where cycle slips should occur
 
-    Return: List of (start_epoch, slip_magnitude) tuples 
+    Return: DataFrame with columns ['epoch', 'observation', 'cycle_slip'] 
     '''
 
-    if frequency.upper() == "L1" :
+    if frequency.upper() == 1 :
         wavelength = compute_wavelength(10.23e6, 154)
-    elif frequency.upper() == "L2":
+    elif frequency.upper() == 2:
         wavelength = compute_wavelength(10.23e6, 120)
+    else: 
+        print("Frequency must be 1 (L1) or 2 (L2)")
 
-    number = 1 # To test 
+    # Number of cycle slip
+    number = len(epochs)
+
+    # Create a copy of observations
+    dirty_obs = observation.copy()
 
     # Generate random epochs where the cycle slip starts
-    slip_start = np.sort(np.random.uniform(0, epochs, number))
+    # slip_start = np.sort(np.random.uniform(0, time, number))
 
     # Generate random magnitude for the event
     slip_cycles = np.random.randint(1, 1000, number)
@@ -503,8 +509,21 @@ def cycle_slip_generator(frequency, number, epochs):
     # Convert to phase offset in meters
     slip_offsets = slip_cycles * wavelength
 
-    # Return as list of (start_time, magnitude) tuples for easy application
-    cycle_slips = [(slip_start[i], slip_offsets[i]) for i in range(number)]
+    # Apply cycle slips: add magnitude to all observations from slip epoch onward
+    for i, epoch in enumerate(epochs):
+        dirty_obs[epoch:] += slip_offsets[i]
+
+    # Create cycle_slip flag column: 1 where slip occurs, 0 otherwise
+    total_epochs = len(observation)
+    cycle_slip_flags = np.zeros(total_epochs)
+    cycle_slip_flags[epochs] = 1
+
+    # Create output DataFrame
+    df = pd.DataFrame({
+        'epoch': range(total_epochs),
+        'observation': dirty_obs,
+        'cycle_slip': cycle_slip_flags
+    })
     
-    return cycle_slips
+    return df
 
