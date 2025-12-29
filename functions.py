@@ -474,3 +474,56 @@ def iono_phase_correction(lat, lon, az, el, time, ionoparams, frequency, f1):
     phase_correction = -pseudorange_correction * frequency_factor
     
     return phase_correction
+
+def cycle_slip_generator(frequency, observation, epochs):
+    '''
+    Compute when and how long will the cycle slip be
+
+    Input: 
+    - Frequency: 1 for L1, 2 for L2 (integer)
+    - observation: Dataframe with 'phase' columns for observations
+    - epochs: Array or list of epoch indices where cycle slips should occur
+
+    Return: DataFrame with columns ['epoch', 'observation', 'cycle_slip'] 
+    '''
+
+    if frequency.upper() == 1 :
+        wavelength = compute_wavelength(10.23e6, 154)
+    elif frequency.upper() == 2:
+        wavelength = compute_wavelength(10.23e6, 120)
+    else: 
+        print("Frequency must be 1 (L1) or 2 (L2)")
+
+    # Number of cycle slip
+    number = len(epochs)
+
+    # Create a copy of observations
+    dirty_obs = observation.copy()
+
+    # Generate random epochs where the cycle slip starts
+    # slip_start = np.sort(np.random.uniform(0, time, number))
+
+    # Generate random magnitude for the event
+    slip_cycles = np.random.randint(1, 1000, number)
+
+    # Convert to phase offset in meters
+    slip_offsets = slip_cycles * wavelength
+
+    # Apply cycle slips: add magnitude to all observations from slip epoch onward
+    for i, epoch in enumerate(epochs):
+        dirty_obs[epoch:] += slip_offsets[i]
+
+    # Create cycle_slip flag column: 1 where slip occurs, 0 otherwise
+    total_epochs = len(observation)
+    cycle_slip_flags = np.zeros(total_epochs)
+    cycle_slip_flags[epochs] = 1
+
+    # Create output DataFrame
+    df = pd.DataFrame({
+        'epoch': range(total_epochs),
+        'observation': dirty_obs,
+        'cycle_slip': cycle_slip_flags
+    })
+    
+    return df
+
