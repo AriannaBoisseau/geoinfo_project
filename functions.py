@@ -475,7 +475,7 @@ def iono_phase_correction(lat, lon, az, el, time, ionoparams, frequency, f1):
     
     return phase_correction
 
-def clock_offset_generator(frequency, number, epochs):
+def cycle_slip_generator(frequency, number, epochs):
     '''
     Compute when and how long will the cycle slip be
 
@@ -484,7 +484,7 @@ def clock_offset_generator(frequency, number, epochs):
     - Number: Number of cycle slips   
     - Epochs: Time 
 
-    Return: List of (time, slip_magnitude) tuples 
+    Return: List of (start_epoch, slip_magnitude) tuples 
     '''
 
     if frequency.upper() == "L1" :
@@ -494,17 +494,17 @@ def clock_offset_generator(frequency, number, epochs):
 
     number = 1 # To test 
 
-    # Generate random cycle slip times within duration
-    slip_time = np.sort(np.random.uniform(0, epochs, number))
+    # Generate random epochs where the cycle slip starts
+    slip_start = np.sort(np.random.uniform(0, epochs, number))
 
-    # Generate random integer cycle slips 
-    slip_duration = np.random.uniform(1, epochs, number)
+    # Generate random magnitude for the event
+    slip_cycles = np.random.randint(1, 1000, number)
 
     # Convert to phase offset in meters
-    slip_offsets = slip_duration * wavelength
+    slip_offsets = slip_cycles * wavelength
 
-    # Return as list of (time, offset) tuples for easy application
-    cycle_slips = [(slip_time[i], slip_offsets[i]) for i in range(number)]
+    # Return as list of (start_time, magnitude) tuples for easy application
+    cycle_slips = [(slip_start[i], slip_offsets[i]) for i in range(number)]
     
     return cycle_slips
 
