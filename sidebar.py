@@ -92,7 +92,7 @@ def render_sidebar():
             with st.expander('Frequency Parameters', expanded=st.session_state.get('expand_frequency_params', True)):
                 col1, col2, col3 = st.columns(3)
                 with col1:
-                    st.number_input('Fundamental frequency (MHz)', min_value=0.0, value=default_params.get('fundamental_frequency'), step=0.01, key='fundamental_frequency')
+                    st.number_input('Fundamental frequency (Hz)', min_value=0.0, value=default_params.get('fundamental_frequency'), step=0.01, key='fundamental_frequency', format='%e')
                 with col2:
                     st.number_input('Frequency multiplier for L1', min_value=0, value=default_params.get('frequency_multiplier_L1'), step=1, key='frequency_multiplier_L1')
                 with col3:
@@ -120,6 +120,8 @@ def render_sidebar():
                 st.number_input('Simulation Duration (seconds)', min_value=1, value=default_params.get('epochs'), step=1, key='epochs')
                 st.number_input('Earth\'s Standard Gravitational Parameter', min_value=None, max_value=None, value=default_params.get('GMe'), step=None, format='%e', key='GMe')
                 st.number_input('Earth\'s Angular Velocity', min_value=None, max_value=None, value=default_params.get('OmegaEdot'), step=None, format='%e', key='OmegaEdot')
+
+            # TODO add klobuchar parameters
 
         else:
             st.error('An unexpected error occurred. Please refresh the page and try again.')

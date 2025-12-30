@@ -25,25 +25,23 @@ with col2:
         show_computation_button()
 
 if st.session_state.computation_done == True:
-    col1, col2, _ = st.columns([1,3,1])
-    with col1:
-        st.image('images/favicon.png', width=100)
-    with col2:
-        st.title('Cycle slip simulation')
-        st.caption('In this section you can provide parameters to cycle slips to the simulated GNSS data.')
-        col1, col2, col3 = st.columns(3)
+    if st.session_state.get('cycle_slip_added') is None:
+        col1, col2, _ = st.columns([1,3,1])
         with col1:
-            st.number_input('epoch of cycle slip', min_value=0, max_value=st.session_state.epochs-1, value=0, step=1, key='cycle_slip_epoch')
+            st.image('images/favicon.png', width=100)
         with col2:
-            st.number_input('number of cycles to add on L1', min_value=1, max_value=None, value=1, step=1, key='cycle_slip_L1')
-        with col3:
-            st.number_input('number of cycles to add on L2', min_value=1, max_value=None, value=1, step=1, key='cycle_slip_L2')
+            st.title('Cycle slip simulation')
+            st.caption('In this section you can provide parameters to cycle slips to the simulated GNSS data.')
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                st.number_input('epoch of cycle slip', min_value=0, max_value=st.session_state.epochs-1, value=0, step=1, key='cycle_slip_epoch')
+            with col2:
+                st.number_input('number of cycles to add on L1', min_value=1, max_value=None, value=1, step=1, key='cycle_slip_L1')
+            with col3:
+                st.number_input('number of cycles to add on L2', min_value=1, max_value=None, value=1, step=1, key='cycle_slip_L2')
+                
+            st.button('Add Cycle Slip', key='add_cycle_slip_button', use_container_width=True, on_click=run_add_cycle_slip)
 
-        def run_add_cycle_slip():
-            st.session_state.cycle_slip_added = True
-        
-        st.button('Add Cycle Slip', key='add_cycle_slip_button', use_container_width=True, on_click=run_add_cycle_slip)
-
-        if st.session_state.get('cycle_slip_added'):
-            st.success('Cycle slip added successfully!')
-            st.session_state.cycle_slip_added = False
+    if st.session_state.get('cycle_slip_added'):
+        st.success('Cycle slip added successfully!')
+        st.session_state.cycle_slip_added = False

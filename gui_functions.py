@@ -1,10 +1,12 @@
 import json
 import streamlit as st
 import pandas as pd
+import numpy as np
 from threading import RLock
 
 from main_functionalities import run_simulation
 from plots import plot_L1_L2, plot_differences, plot_diff_of_diff
+from functions import compute_wavelength, cycle_slip_generator
 
 def show_map(lat, lon):
     st.subheader('Ground Station Location')
@@ -82,3 +84,36 @@ def show_computation_button():
                     file_name='L2_observations.csv',
                     mime='text/csv'
                 )
+
+def run_add_cycle_slip():
+    L1 = st.session_state['L1_observations']
+    L2 = st.session_state['L2_observations']
+    epoch = np.array([st.session_state.cycle_slip_epoch])
+
+    w1 = compute_wavelength(st.session_state.fundamental_frequency, st.session_state.frequency_multiplier_L1)
+    w2 = compute_wavelength(st.session_state.fundamental_frequency, st.session_state.frequency_multiplier_L2)
+
+    L1_dirty = cycle_slip_generator(w1, L1, epoch)
+    L2_dirty = cycle_slip_generator(w2, L2, epoch)
+
+    st.session_state.cycle_slip_added = True
+
+    l1_and_l2 = plot_L1_L2(L1_dirty, L2_dirty)
+    plot_diff1, diff1 = plot_differences(L1_dirty, 'blue')
+    plot_diff2, diff2 = plot_differences(L2_dirty, 'orange')
+    plot_diff, _ = plot_diff_of_diff(diff1, diff2)
+    _lock = RLock()
+
+    with _lock:
+        st.subheader('L1 and L2 Observations')
+        st.pyplot(l1_and_l2)
+        col1, col2 = st.columns(2)
+        with col1:
+            st.subheader('Differences in L1 Observations')
+            st.pyplot(plot_diff1)
+        with col2:
+            st.subheader('Differences in L2 Observations')
+            st.pyplot(plot_diff2)
+
+        st.subheader('Difference of Differences between L1 and L2 Observations')
+        st.pyplot(plot_diff)
