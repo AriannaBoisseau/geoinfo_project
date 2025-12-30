@@ -123,5 +123,8 @@ def render_sidebar():
 
             # TODO add klobuchar parameters
 
+            with st.expander('Cycle Slip Parameters'):
+                st.number_input('epoch of cycle slip', min_value=0, max_value=st.session_state.epochs-1, value=0, step=1, key='cycle_slip_epoch')
+
         else:
             st.error('An unexpected error occurred. Please refresh the page and try again.')

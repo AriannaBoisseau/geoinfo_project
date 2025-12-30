@@ -85,7 +85,18 @@ def show_computation_button():
                     mime='text/csv'
                 )
 
+        run_add_cycle_slip()
+        if st.session_state.get('cycle_slip_added'):
+            st.session_state.cycle_slip_added = False
+
 def run_add_cycle_slip():
+
+    col1, col2, _ = st.columns([1,3,1])
+    with col1:
+        st.image('images/favicon.png', width=100)
+    with col2:
+        st.title('Cycle slip simulation')
+
     L1 = st.session_state['L1_observations']
     L2 = st.session_state['L2_observations']
     epoch = np.array([st.session_state.cycle_slip_epoch])
