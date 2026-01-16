@@ -524,3 +524,21 @@ def cycle_slip_generator(wavelength, observation, epochs):
     
     return df
 
+def identify_cycle_slip(df):
+    """
+    Identify cycle slip by finding the epoch with the highest absolute difference.
+    
+    Parameters:
+    df (pd.DataFrame): DataFrame with 'epoch' and 'diff' columns. This DataFrame is the difference of differences.
+    
+    Returns:
+    int: Epoch corresponding to the maximum absolute difference
+    """
+    # Remove NaN values
+    df_clean = df.dropna(subset=['diff']).copy()
+    
+    # Find the index with the maximum absolute difference
+    max_idx = int(df_clean['diff'].abs().idxmax())
+    max_epoch = int(df_clean.loc[max_idx, 'epoch'])
+    
+    return max_epoch
