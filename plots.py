@@ -102,7 +102,7 @@ def plot_diff_of_diff(diff1, diff2):
     diff_of_diff = pd.DataFrame()
     diff_of_diff['epoch'] = diff1['epoch']
     diff_of_diff['diff'] = diff1['diff'] - diff2['diff']
-    plt.plot(diff_of_diff['epoch'], diff_of_diff['epoch'], '-', color='green', linewidth=1, label='Difference of Differences')
+    plt.plot(diff_of_diff['epoch'], diff_of_diff['diff'], '-', color='green', linewidth=1, label='Difference of Differences')
     plt.xlabel('Time (seconds)')
     plt.ylabel('Distance (meters)')
     plt.legend()

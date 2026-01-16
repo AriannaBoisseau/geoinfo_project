@@ -59,6 +59,7 @@ def render_sidebar():
                 st.session_state.expand_frequency_params = False
                 st.session_state.expand_ground_station_params = False
                 st.session_state.expand_other_params = False
+                st.session_state.expand_cycle_slip_params = False
 
             with open('default_parameters.json', 'r') as file:
                 default_params = json.load(file)
@@ -123,7 +124,7 @@ def render_sidebar():
 
             # TODO add klobuchar parameters
 
-            with st.expander('Cycle Slip Parameters'):
+            with st.expander('Cycle Slip Parameters', expanded=st.session_state.get('expand_cycle_slip_params', True)):
                 st.number_input('epoch of cycle slip', min_value=0, max_value=st.session_state.epochs-1, value=0, step=1, key='cycle_slip_epoch')
 
         else:
