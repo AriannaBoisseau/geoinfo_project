@@ -18,11 +18,17 @@ render_sidebar()
 
 _, col2, _ = st.columns([1,3,1])
 with col2:
-    if 'ground_station_latitude' not in st.session_state or 'ground_station_longitude' not in st.session_state:
-        st.info('Please provide the ground station parameters using the sidebar to the left.')
+    params = st.session_state.get('params_data')
+    if not params:
+        st.info('Please provide the parameters using the sidebar to the left.')
     else:
-        show_map(st.session_state.ground_station_latitude, st.session_state.ground_station_longitude)
-        show_computation_button()
+        lat = params.get('ground_station_latitude')
+        lon = params.get('ground_station_longitude')
+        if lat is None or lon is None:
+            st.info('Please provide the ground station parameters using the sidebar to the left.')
+        else:
+            show_map(lat, lon)
+            show_computation_button()
 
 # if st.session_state.computation_done == True:
 #     if st.session_state.get('cycle_slip_added') is None:

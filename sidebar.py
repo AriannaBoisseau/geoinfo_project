@@ -48,10 +48,9 @@ def render_sidebar():
             # parsing file
             if st.session_state.manual_params_file is not None:
                 uploaded_file = st.session_state.manual_params_file
+                uploaded_file.seek(0)
                 params_data = json.load(uploaded_file)
-                # TODO: aggiungere controllo su ogni parametro
-                st.session_state.ground_station_latitude = params_data.get('ground_station_latitude', 0.0)
-                st.session_state.ground_station_longitude = params_data.get('ground_station_longitude', 0.0)
+                st.session_state['params_data'] = params_data
 
         elif st.session_state.input_method == 'Enter Manually':
             if st.session_state.get('computation_running') == True:
@@ -60,72 +59,86 @@ def render_sidebar():
                 st.session_state.expand_ground_station_params = False
                 st.session_state.expand_other_params = False
                 st.session_state.expand_cycle_slip_params = False
+                st.session_state.expand_klobuchar_params = False
 
             with open('default_parameters.json', 'r') as file:
                 default_params = json.load(file)
+            
+            # Initialize params_data if not exists
+            if 'params_data' not in st.session_state:
+                st.session_state['params_data'] = default_params.copy()
+
             with st.expander('Satellite Parameters', expanded=st.session_state.get('expand_satellite_params', True)):
                 st.subheader('Keplerian Orbit Parameters')
                 col1, col2 = st.columns(2)
                 with col1:
-                    st.number_input('Eccentricity', min_value=None, max_value=None, value=default_params.get('e'), step=None, format='%e')
+                    st.session_state['params_data']['e'] = st.number_input('Eccentricity', min_value=None, max_value=None, value=st.session_state['params_data'].get('e', 0.0), step=None, format='%e')
                 with col2:
-                    st.number_input('Sqrt of semi-major axis', min_value=None, max_value=None, value=default_params.get('sqrt_a'), step=None, format='%e')
+                    st.session_state['params_data']['sqrt_a'] = st.number_input('Sqrt of semi-major axis', min_value=None, max_value=None, value=st.session_state['params_data'].get('sqrt_a', 0.0), step=None, format='%e')
                 col1, col2 = st.columns(2)
                 with col1:
-                    st.number_input('Mean Anomaly', min_value=None, max_value=None, value=default_params.get('M0'), step=None, format='%e')
+                    st.session_state['params_data']['M0'] = st.number_input('Mean Anomaly', min_value=None, max_value=None, value=st.session_state['params_data'].get('M0', 0.0), step=None, format='%e')
                 with col2:
-                    st.number_input('Longitude of the ascending node', min_value=None, max_value=None, value=default_params.get('Omega0'), step=None, format='%e')
+                    st.session_state['params_data']['Omega0'] = st.number_input('Longitude of the ascending node', min_value=None, max_value=None, value=st.session_state['params_data'].get('Omega0', 0.0), step=None, format='%e')
                 col1, col2 = st.columns(2)
                 with col1:
-                    st.number_input('Rate of node\'s right ascension', min_value=None, max_value=None, value=default_params.get('Omegadot'), step=None, format='%e')
+                    st.session_state['params_data']['Omegadot'] = st.number_input('Rate of node\'s right ascension', min_value=None, max_value=None, value=st.session_state['params_data'].get('Omegadot', 0.0), step=None, format='%e')
                 with col2:
-                    st.number_input('Inclination', min_value=None, max_value=None, value=default_params.get('i0'), step=None, format='%e')
+                    st.session_state['params_data']['i0'] = st.number_input('Inclination', min_value=None, max_value=None, value=st.session_state['params_data'].get('i0', 0.0), step=None, format='%e')
                 col1, col2 = st.columns(2)
                 with col1:
-                    st.number_input('Rate of inclination angle', min_value=None, max_value=None, value=default_params.get('idot'), step=None, format='%e')
+                    st.session_state['params_data']['idot'] = st.number_input('Rate of inclination angle', min_value=None, max_value=None, value=st.session_state['params_data'].get('idot', 0.0), step=None, format='%e')
                 with col2:
-                    st.number_input('Argument of perigee', min_value=None, max_value=None, value=default_params.get('w0'), step=None, format='%e')
+                    st.session_state['params_data']['w0'] = st.number_input('Argument of perigee', min_value=None, max_value=None, value=st.session_state['params_data'].get('w0', 0.0), step=None, format='%e')
                 col1, col2 = st.columns(2)
-                st.number_input('Rate of argument of perigee', min_value=None, max_value=None, value=default_params.get('wdot'), step=None, format='%e')
+                st.session_state['params_data']['wdot'] = st.number_input('Rate of argument of perigee', min_value=None, max_value=None, value=st.session_state['params_data'].get('wdot', 0.0), step=None, format='%e')
                 st.subheader('Other Satellite Parameters')
-                st.number_input('Integer Ambiguity Value', min_value=0, value=default_params.get('integer_ambiguity'), step=1, key='integer_ambiguity')
+                st.session_state['params_data']['integer_ambiguity'] = st.number_input('Integer Ambiguity Value', min_value=0, value=st.session_state['params_data'].get('integer_ambiguity', 0), step=1)
 
             with st.expander('Frequency Parameters', expanded=st.session_state.get('expand_frequency_params', True)):
                 col1, col2, col3 = st.columns(3)
                 with col1:
-                    st.number_input('Fundamental frequency (Hz)', min_value=0.0, value=default_params.get('fundamental_frequency'), step=0.01, key='fundamental_frequency', format='%e')
+                    st.session_state['params_data']['fundamental_frequency'] = st.number_input('Fundamental frequency (Hz)', min_value=0.0, value=st.session_state['params_data'].get('fundamental_frequency', 0.0), step=0.01, format='%e')
                 with col2:
-                    st.number_input('Frequency multiplier for L1', min_value=0, value=default_params.get('frequency_multiplier_L1'), step=1, key='frequency_multiplier_L1')
+                    st.session_state['params_data']['frequency_multiplier_L1'] = st.number_input('Frequency multiplier for L1', min_value=0, value=st.session_state['params_data'].get('frequency_multiplier_L1', 0), step=1)
                 with col3:
-                    st.number_input('Frequency multiplier for L2', min_value=0, value=default_params.get('frequency_multiplier_L2'), step=1, key='frequency_multiplier_L2')
+                    st.session_state['params_data']['frequency_multiplier_L2'] = st.number_input('Frequency multiplier for L2', min_value=0, value=st.session_state['params_data'].get('frequency_multiplier_L2', 0), step=1)
                 
             with st.expander('Ground Station Parameters', expanded=st.session_state.get('expand_ground_station_params', True)):
                 st.subheader('Clock Offset')
-                st.number_input('dt0', min_value=None, max_value=None, value=default_params.get('dt0'), step=None, format='%e')
-                st.number_input('dt1', min_value=None, max_value=None, value=default_params.get('dt1'), step=None, format='%e') 
-                st.number_input('dt2', min_value=None, max_value=None, value=default_params.get('dt2'), step=None, format='%e') 
-                st.number_input('Clock Offset Noise Standard Deviation', min_value=0.0, value=default_params.get('clock_offset_std'), step=None, key='clock_offset_noise_std', format='%e')
+                st.session_state['params_data']['dt0'] = st.number_input('dt0', min_value=None, max_value=None, value=st.session_state['params_data'].get('dt0', 0.0), step=None, format='%e')
+                st.session_state['params_data']['dt1'] = st.number_input('dt1', min_value=None, max_value=None, value=st.session_state['params_data'].get('dt1', 0.0), step=None, format='%e')
+                st.session_state['params_data']['dt2'] = st.number_input('dt2', min_value=None, max_value=None, value=st.session_state['params_data'].get('dt2', 0.0), step=None, format='%e')
+                st.session_state['params_data']['clock_offset_std'] = st.number_input('Clock Offset Noise Standard Deviation', min_value=0.0, value=st.session_state['params_data'].get('clock_offset_std', 0.0), step=None, format='%e')
                 st.subheader('Position')
                 col1, col2 = st.columns(2)
                 with col1:
-                    st.number_input('Latitude of ground station (degrees)', min_value=-90.0, max_value=90.0, value=default_params.get('ground_station_latitude'), step=0.01, key='ground_station_latitude')
+                    st.session_state['params_data']['ground_station_latitude'] = st.number_input('Latitude of ground station (degrees)', min_value=-90.0, max_value=90.0, value=st.session_state['params_data'].get('ground_station_latitude', 0.0), step=0.01)
                 with col2:
-                    st.number_input('Longitude of ground station (degrees)', min_value=-180.0, max_value=180.0, value=default_params.get('ground_station_longitude'), step=0.01, key='ground_station_longitude')
+                    st.session_state['params_data']['ground_station_longitude'] = st.number_input('Longitude of ground station (degrees)', min_value=-180.0, max_value=180.0, value=st.session_state['params_data'].get('ground_station_longitude', 0.0), step=0.01)
                 col1, col2 = st.columns(2)
                 with col1:
-                    st.number_input('Altitude of ground station (meters)', min_value=0.0, value=default_params.get('ground_station_altitude'), step=1.0, key='ground_station_altitude')
+                    st.session_state['params_data']['ground_station_altitude'] = st.number_input('Altitude of ground station (meters)', min_value=0.0, value=st.session_state['params_data'].get('ground_station_altitude', 0.0), step=1.0)
                 with col2:
-                    st.number_input('Minimum Elevation Angle (degrees)', min_value=0.0, max_value=90.0, value=default_params.get('minimum_elevation_angle'), step=1.0, key='minimum_elevation_angle')
+                    st.session_state['params_data']['minimum_elevation_angle'] = st.number_input('Minimum Elevation Angle (degrees)', min_value=0.0, max_value=90.0, value=st.session_state['params_data'].get('minimum_elevation_angle', 0.0), step=1.0)
 
             with st.expander('Other Simulation Parameters', expanded=st.session_state.get('expand_other_params', True)):
-                st.number_input('Simulation Duration (seconds)', min_value=1, value=default_params.get('epochs'), step=1, key='epochs')
-                st.number_input('Earth\'s Standard Gravitational Parameter', min_value=None, max_value=None, value=default_params.get('GMe'), step=None, format='%e', key='GMe')
-                st.number_input('Earth\'s Angular Velocity', min_value=None, max_value=None, value=default_params.get('OmegaEdot'), step=None, format='%e', key='OmegaEdot')
+                st.session_state['params_data']['epochs'] = st.number_input('Simulation Duration (seconds)', min_value=1, value=st.session_state['params_data'].get('epochs', 1), step=1)
+                st.session_state['params_data']['GMe'] = st.number_input('Earth\'s Standard Gravitational Parameter', min_value=None, max_value=None, value=st.session_state['params_data'].get('GMe', 0.0), step=None, format='%e')
+                st.session_state['params_data']['OmegaEdot'] = st.number_input('Earth\'s Angular Velocity', min_value=None, max_value=None, value=st.session_state['params_data'].get('OmegaEdot', 0.0), step=None, format='%e')
 
-            # TODO add klobuchar parameters
+            with st.expander('Ionospheric Model Parameters (Klobuchar)', expanded=st.session_state.get('expand_klobuchar_params', True)):
+                st.session_state['params_data']['alpha0'] = st.number_input('Alpha0', min_value=None, max_value=None, value=st.session_state['params_data'].get('alpha0', 0.0), step=None, format='%e')
+                st.session_state['params_data']['alpha1'] = st.number_input('Alpha1', min_value=None, max_value=None, value=st.session_state['params_data'].get('alpha1', 0.0), step=None, format='%e')
+                st.session_state['params_data']['alpha2'] = st.number_input('Alpha2', min_value=None, max_value=None, value=st.session_state['params_data'].get('alpha2', 0.0), step=None, format='%e')
+                st.session_state['params_data']['alpha3'] = st.number_input('Alpha3', min_value=None, max_value=None, value=st.session_state['params_data'].get('alpha3', 0.0), step=None, format='%e')
+                st.session_state['params_data']['beta0'] = st.number_input('Beta0', min_value=None, max_value=None, value=st.session_state['params_data'].get('beta0', 0.0), step=None, format='%e')
+                st.session_state['params_data']['beta1'] = st.number_input('Beta1', min_value=None, max_value=None, value=st.session_state['params_data'].get('beta1', 0.0), step=None, format='%e')
+                st.session_state['params_data']['beta2'] = st.number_input('Beta2', min_value=None, max_value=None, value=st.session_state['params_data'].get('beta2', 0.0), step=None, format='%e')
+                st.session_state['params_data']['beta3'] = st.number_input('Beta3', min_value=None, max_value=None, value=st.session_state['params_data'].get('beta3', 0.0), step=None, format='%e')
 
             with st.expander('Cycle Slip Parameters', expanded=st.session_state.get('expand_cycle_slip_params', True)):
-                st.number_input('epoch of cycle slip', min_value=0, max_value=st.session_state.epochs-1, value=0, step=1, key='cycle_slip_epoch')
+                st.session_state['params_data']['cycle_slip_epoch'] = st.number_input('epoch of cycle slip', min_value=1, max_value=st.session_state['params_data'].get('epochs', 1)-1, value=st.session_state['params_data'].get('cycle_slip_epoch', 1), step=1)
 
         else:
             st.error('An unexpected error occurred. Please refresh the page and try again.')

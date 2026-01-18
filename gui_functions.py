@@ -91,23 +91,44 @@ def show_computation_button():
 
 def run_add_cycle_slip():
 
+    # Unified params source
+    params = st.session_state.get('params_data')
+    if params is None:
+        st.error("Parameters are missing. Please provide parameters first.")
+        return
+
+    # Ensure observations exist
+    L1 = st.session_state.get('L1_observations')
+    L2 = st.session_state.get('L2_observations')
+    if L1 is None or L2 is None:
+        st.error("Observations not available. Run the computation first.")
+        return
+
+    # Pull needed params with sane defaults
+    cycle_slip_epoch = int(params.get('cycle_slip_epoch', 1))
+    fundamental_frequency = params.get('fundamental_frequency')
+    freq_mult_L1 = params.get('frequency_multiplier_L1')
+    freq_mult_L2 = params.get('frequency_multiplier_L2')
+
+    if fundamental_frequency is None or freq_mult_L1 is None or freq_mult_L2 is None:
+        st.error("Frequency parameters are missing. Please provide them.")
+        return
+
     col1, col2, _ = st.columns([1,3,1])
     with col1:
         st.image('images/favicon.png', width=100)
     with col2:
         st.title('Cycle slip simulation')
 
-    L1 = st.session_state['L1_observations']
-    L2 = st.session_state['L2_observations']
-    epoch = np.array([st.session_state.cycle_slip_epoch])
+    epoch = np.array([cycle_slip_epoch], dtype=int)
 
-    w1 = compute_wavelength(st.session_state.fundamental_frequency, st.session_state.frequency_multiplier_L1)
-    w2 = compute_wavelength(st.session_state.fundamental_frequency, st.session_state.frequency_multiplier_L2)
+    w1 = compute_wavelength(fundamental_frequency, freq_mult_L1)
+    w2 = compute_wavelength(fundamental_frequency, freq_mult_L2)
 
     L1_dirty = cycle_slip_generator(w1, L1, epoch)
     L2_dirty = cycle_slip_generator(w2, L2, epoch)
 
-    st.session_state.cycle_slip_added = True
+    st.session_state['cycle_slip_added'] = True
 
     l1_and_l2 = plot_L1_L2(L1_dirty, L2_dirty)
     plot_diff1, diff1 = plot_differences(L1_dirty, 'blue')

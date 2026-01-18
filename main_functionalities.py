@@ -30,8 +30,11 @@ def run_simulation():
     f1 = compute_wavelength(param['fundamental_frequency'], param['frequency_multiplier_L1'])
     f2 = compute_wavelength(param['fundamental_frequency'], param['frequency_multiplier_L2'])
 
-    alpha = [0.7451*10**(-8),  0.1490*10**(-7),  -0.5960*10**(-7), -0.1192*10**(-6)]
-    beta = [0.9216*10**5,  0.1311*10**6, -0.6554*10**5, -0.5243*10**6]
+    alpha = [param['alpha0'], param['alpha1'], param['alpha2'], param['alpha3']]
+    beta = [param['beta0'], param['beta1'], param['beta2'], param['beta3']]
+
+    # alpha = [0.7451*10**(-8),  0.1490*10**(-7),  -0.5960*10**(-7), -0.1192*10**(-6)]
+    # beta = [0.9216*10**5,  0.1311*10**6, -0.6554*10**5, -0.5243*10**6]
 
     L1 = compute_observations(filtered_df, f1, param['ground_station_latitude'], param['ground_station_longitude'], alpha+beta, param['fundamental_frequency'] * param['frequency_multiplier_L1'], param['fundamental_frequency'] * param['frequency_multiplier_L1']) 
     L2 = compute_observations(filtered_df, f2, param['ground_station_latitude'], param['ground_station_longitude'], alpha+beta, param['fundamental_frequency'] * param['frequency_multiplier_L2'], param['fundamental_frequency'] * param['frequency_multiplier_L1'])

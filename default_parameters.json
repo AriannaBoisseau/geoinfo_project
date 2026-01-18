@@ -22,5 +22,14 @@
     "ground_station_latitude": -18.1553985,
     "ground_station_longitude": 49.4098352,
     "ground_station_altitude": 0.0,
-    "minimum_elevation_angle": 0.0
+    "minimum_elevation_angle": 0.0,
+    "alpha0": 0.7451e-8,
+    "alpha1": 0.1490e-7,
+    "alpha2": -0.5960e-7,
+    "alpha3": -0.1192e-6,
+    "beta0": 0.9216e5,
+    "beta1": 0.1311e6,
+    "beta2": -0.6554e5,
+    "beta3": -0.5243e6,
+    "cycle_slip_epoch": 10000
 }
