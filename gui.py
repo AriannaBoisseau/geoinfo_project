@@ -29,6 +29,7 @@ with col2:
         else:
             show_map(lat, lon)
             show_computation_button()
+            show_cycle_slip_section()
 
 # if st.session_state.computation_done == True:
 #     if st.session_state.get('cycle_slip_added') is None:

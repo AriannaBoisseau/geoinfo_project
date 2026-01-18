@@ -6,7 +6,7 @@ from threading import RLock
 
 from main_functionalities import run_simulation
 from plots import plot_L1_L2, plot_differences, plot_diff_of_diff
-from functions import compute_wavelength, cycle_slip_generator
+from functions import compute_wavelength, cycle_slip_generator, identify_cycle_slip
 
 def show_map(lat, lon):
     st.subheader('Ground Station Location')
@@ -133,7 +133,8 @@ def run_add_cycle_slip():
     l1_and_l2 = plot_L1_L2(L1_dirty, L2_dirty)
     plot_diff1, diff1 = plot_differences(L1_dirty, 'blue')
     plot_diff2, diff2 = plot_differences(L2_dirty, 'orange')
-    plot_diff, _ = plot_diff_of_diff(diff1, diff2)
+    plot_diff, diff_of_diff = plot_diff_of_diff(diff1, diff2)
+    st.session_state['diff_of_diff'] = diff_of_diff
     _lock = RLock()
 
     with _lock:
@@ -149,3 +150,18 @@ def run_add_cycle_slip():
 
         st.subheader('Difference of Differences between L1 and L2 Observations')
         st.pyplot(plot_diff)
+
+def show_cycle_slip_section():
+    # Render only when diff_of_diff exists
+    diff_of_diff = st.session_state.get('diff_of_diff')
+    if diff_of_diff is None:
+        return
+
+    col1, col2, _ = st.columns([1,3,1])
+    with col1:
+        st.image('images/favicon.png', width=100)
+    with col2:
+        st.title('Cycle slip identification')
+
+    cycle_splip_detected_epoch = identify_cycle_slip(diff_of_diff)
+    st.success(f'Cycle slip detected at epoch: {cycle_splip_detected_epoch}')
