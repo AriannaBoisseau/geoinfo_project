@@ -26,7 +26,13 @@ def show_computation_button():
     if st.session_state.get('computation_running') == True:
         with st.spinner(text="The computation has started. Please wait...", show_time=True):
             try:
-                L1, L2 = run_simulation()
+                params = st.session_state.get('params_data')
+                if params is None:
+                    st.error("Parameters are missing. Please provide parameters first.")
+                    st.session_state['computation_running'] = False
+                    return
+                
+                L1, L2 = run_simulation(params)
                 st.session_state['L1_observations'] = L1
                 st.session_state['L2_observations'] = L2
                 st.session_state['computation_running'] = False

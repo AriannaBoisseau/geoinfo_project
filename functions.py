@@ -4,17 +4,17 @@ import pandas as pd
 import pyproj as pp
 import scipy as sp
 
-from almanac_constants import AlmanacConstants as ac
-
-def compute_clock_offset(t):
+def compute_clock_offset(t, dt0, dt1, dt2):
+    """Compute clock offset using user parameters"""
     clock_offsets = []
     
     for t_i in t:
-        clock_offsets.append(ac.dt0 + ac.dt1 * t_i + ac.dt2 * t_i**2)
+        clock_offsets.append(dt0 + dt1 * t_i + dt2 * t_i**2)
 
     return clock_offsets
 
-def ecc_anomaly(M):
+def ecc_anomaly(M, e):
+    """Compute eccentric anomaly using eccentricity parameter"""
     E = M
 
     max_iter = 12
@@ -24,7 +24,7 @@ def ecc_anomaly(M):
 
     while ((dE > 1e-12) and (i < max_iter)):
         E_tmp = E
-        E = M + ac.e * np.sin(E)
+        E = M + e * np.sin(E)
         dE = np.mod(E - E_tmp, 2 * np.pi)
         i = i + 1
 
@@ -35,25 +35,40 @@ def ecc_anomaly(M):
 
     return E
 
-def compute_ITRF_satellite_position(t):
+def compute_ITRF_satellite_position(t, params):
+    """Compute satellite position using user parameters from params dict"""
     coord_ORS = []
     coord_ITRF = []
 
+    # Extract parameters
+    GMe = params['GMe']
+    sqrt_a = params['sqrt_a']
+    e = params['e']
+    a = sqrt_a ** 2
+    M0 = params['M0']
+    w0 = params['w0']
+    wdot = params['wdot']
+    i0 = params['i0']
+    idot = params['idot']
+    Omega0 = params['Omega0']
+    Omegadot = params['Omegadot']
+    OmegaEdot = params['OmegaEdot']
+
     # compute mean motion
-    n = m.sqrt(ac.GMe / ac.a**3)
+    n = m.sqrt(GMe / a**3)
 
     for t_i in t:
         # compute mean anomaly
-        M = ac.M0 + n * t_i
+        M = M0 + n * t_i
 
         # compute eccentric anomaly
-        eta = ecc_anomaly(M)
+        eta = ecc_anomaly(M, e)
 
         # Compute psi
-        psi = m.atan2((m.sqrt(1 - ac.e**2) * m.sin(eta)), (m.cos(eta) - ac.e))
+        psi = m.atan2((m.sqrt(1 - e**2) * m.sin(eta)), (m.cos(eta) - e))
 
         # Compute radius r
-        r = (ac.a * (1 - ac.e**2)) / (1 + (ac.e * m.cos(psi)))
+        r = (a * (1 - e**2)) / (1 + (e * m.cos(psi)))
 
         # Compute the coordinates of the satellite in ORS and store it in coord_ORS
         xORS = r * m.cos(psi)
@@ -61,9 +76,9 @@ def compute_ITRF_satellite_position(t):
         zORS = 0
         coord_ORS.append(np.array([[xORS], [yORS], [zORS]]))
         # Compute rotation angles omega, i, OMEGA
-        omega = ac.w0 + (ac.wdot * t_i)
-        i = ac.i0 + (ac.idot * t_i)
-        OMEGA = ac.Omega0 + ((ac.Omegadot - ac.OmegaEdot) * t_i)
+        omega = w0 + (wdot * t_i)
+        i = i0 + (idot * t_i)
+        OMEGA = Omega0 + ((Omegadot - OmegaEdot) * t_i)
         # Compute the rotation matrices required to transform from ORS to ITRF
         # R(-omega(t))
         Romega = np.array([[np.cos(-omega), np.sin(-omega), 0], [-np.sin(-omega), np.cos(-omega), 0], [0, 0, 1]])
@@ -258,14 +273,15 @@ def itrf_to_geodetic(df_ITRF):
 
     return lat_df, lon_df, h_df
 
-def computing_satellite_data(param):
+def computing_satellite_data(params):
+    """Compute satellite data using all parameters from params dict"""
     satellite_data = pd.DataFrame()
-    satellite_data['time'] = list(range(0, param['epochs'], 1))
-    satellite_data['integer_ambiguity'] = np.full(param['epochs'], param['integer_ambiguity'])
+    satellite_data['time'] = list(range(0, params['epochs'], 1))
+    satellite_data['integer_ambiguity'] = np.full(params['epochs'], params['integer_ambiguity'])
     np.random.seed(42) 
-    satellite_data['noise'] = np.random.normal(0, param['clock_offset_std'], param['epochs'])
-    satellite_data['clock_offset'] = compute_clock_offset(satellite_data['time'])
-    coord_ITRF_list = compute_ITRF_satellite_position(satellite_data['time'])
+    satellite_data['noise'] = np.random.normal(0, params['clock_offset_std'], params['epochs'])
+    satellite_data['clock_offset'] = compute_clock_offset(satellite_data['time'], params['dt0'], params['dt1'], params['dt2'])
+    coord_ITRF_list = compute_ITRF_satellite_position(satellite_data['time'], params)
     ITRF_matrix = np.concatenate(coord_ITRF_list).reshape(-1, 3)
     satellite_data['x_cart'] = ITRF_matrix[:, 0]
     satellite_data['y_cart'] = ITRF_matrix[:, 1]
