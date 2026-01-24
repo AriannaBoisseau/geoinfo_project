@@ -169,5 +169,8 @@ def show_cycle_slip_section():
     with col2:
         st.title('Cycle slip identification')
 
-    cycle_splip_detected_epoch = identify_cycle_slip(diff_of_diff)
-    st.success(f'Cycle slip detected at epoch: {cycle_splip_detected_epoch}')
+    cycle_slip_detected_epoch, cycle_slip_detected_index = identify_cycle_slip(diff_of_diff)
+    if cycle_slip_detected_index == st.session_state.get("params_data").get("cycle_slip_epoch"):
+        st.success(f'Cycle slip detected at index {cycle_slip_detected_index}, matching with index {st.session_state.get("params_data").get("cycle_slip_epoch")} set in the simulation.')
+    else:
+        st.error(f'Cycle slip detected at index {cycle_slip_detected_index}, which does not match with index {st.session_state.get("params_data").get("cycle_slip_epoch")} set in the simulation.')

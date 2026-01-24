@@ -549,6 +549,7 @@ def identify_cycle_slip(df):
     
     Returns:
     int: Epoch corresponding to the maximum absolute difference
+    int: Index of the maximum absolute difference in the DataFrame
     """
     # Remove NaN values
     df_clean = df.dropna(subset=['diff']).copy()
@@ -557,4 +558,4 @@ def identify_cycle_slip(df):
     max_idx = int(df_clean['diff'].abs().idxmax())
     max_epoch = int(df_clean.loc[max_idx, 'epoch'])
     
-    return max_epoch
+    return max_epoch, max_idx

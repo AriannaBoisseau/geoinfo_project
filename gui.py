@@ -3,15 +3,19 @@ import streamlit as st
 from gui_functions import *
 from sidebar import render_sidebar
 
+_, col2, _ = st.columns([1,3,1])
+
 st.set_page_config(page_title='Cycle Slip Simulation and Identification', page_icon='images/favicon.png', layout="wide")
 st.session_state.setdefault('computation_done', False)
 st.session_state.setdefault('computation_running', False)
 
-col1, col2, _ = st.columns([1,3,1])
-with col1:
-    st.image('images/favicon.png', width=100)
+_, col2, _ = st.columns([1,3,1])
 with col2:
-    st.title('Orbit simulation')
+    col1b, col2b, _ = st.columns([1,3,1])
+    with col1b:
+        st.image('images/favicon.png', width=100)
+    with col2b:
+        st.title('Orbit simulation')
 
 # sidebar
 render_sidebar()
