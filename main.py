@@ -40,7 +40,12 @@ print('done.')
 Clock offset computation
 """
 print("Computing clock offsets...".ljust(80), end='', flush=True)
-all_data['clock_offset'] = compute_clock_offset(all_data['time'])
+all_data['clock_offset'] = compute_clock_offset(
+    all_data['time'],
+    param['dt0'],
+    param['dt1'],
+    param['dt2']
+)
 
 plot_clock_offsets(all_data)
 
@@ -49,7 +54,7 @@ print('done.')
 Satellite position computation in Cartesian ITRF coordinates [X, Y, Z]
 """
 print("Computing satellite positions...".ljust(80), end='', flush=True)
-coord_ITRF = compute_ITRF_satellite_position(all_data['time'])
+coord_ITRF = compute_ITRF_satellite_position(all_data['time'], param)
 
 all_data['x_cart'] = [x[0, 0] for x in coord_ITRF]
 all_data['y_cart'] = [x[1, 0] for x in coord_ITRF]
@@ -257,6 +262,6 @@ for i in range(1, len(observations)):
 np.savetxt('output/differences.csv', differences, delimiter=',')
 
 # plot differences
-plot_differences(differences)
+# plot_differences(differences)
 
 print('done.')

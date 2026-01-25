@@ -1,0 +1,25 @@
+Importing default parameters and initializing variables ...                     done.
+Computing clock offsets...                                                      done.
+Computing satellite positions...                                                done.
+Converting Cartesian coordinates to Geodetic coordinates...                     done.
+Plotting satellite trajectory with basemap...                                   done.
+Cheching observability period in Toamasina...                                   done.
+Plotting elevation for visible timewindow...                                    
+============================================================
+SATELLITE VISIBILITY ANALYSIS
+============================================================
+Coordinates: -18.1554°, 49.4098°
+
+Number of visibility periods: 1
+Total visible time: 26477 seconds (7.35 hours)
+
+Visibility periods:
+Start (HH:MM:SS)     End (HH:MM:SS)       Duration (min) 
+------------------------------------------------------------
+14:51:33             22:12:49             441.3          
+Min distance: 20158.385719098933 at time 68349 seconds
+Max distance: 32840.86150632551 at time 30235 seconds
+
+============================================================
+Computing distance between satellite and ground station over time...            done.
+Exporting dataframes and observations to csv...                                 done.
