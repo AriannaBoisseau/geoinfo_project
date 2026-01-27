@@ -132,7 +132,9 @@ def run_add_cycle_slip():
     w2 = compute_wavelength(fundamental_frequency, freq_mult_L2)
 
     L1_dirty = cycle_slip_generator(w1, L1, epoch)
-    L2_dirty = cycle_slip_generator(w2, L2, epoch)
+    # L2_dirty = cycle_slip_generator(w2, L2, epoch)
+    L2_dirty = L2
+    L2_dirty.index = L1_dirty.index
 
     st.session_state['cycle_slip_added'] = True
 
@@ -169,8 +171,9 @@ def show_cycle_slip_section():
     with col2:
         st.title('Cycle slip identification')
 
-    cycle_slip_detected_epoch, cycle_slip_detected_index = identify_cycle_slip(diff_of_diff)
-    if cycle_slip_detected_index == st.session_state.get("params_data").get("cycle_slip_epoch"):
-        st.success(f'Cycle slip detected at index {cycle_slip_detected_index}, matching with index {st.session_state.get("params_data").get("cycle_slip_epoch")} set in the simulation.')
+    cycle_slips_detected = identify_cycle_slip(diff_of_diff)
+    if len(cycle_slips_detected) == 0:
+        st.info('No cycle slips detected.')
+        return
     else:
-        st.error(f'Cycle slip detected at index {cycle_slip_detected_index}, which does not match with index {st.session_state.get("params_data").get("cycle_slip_epoch")} set in the simulation.')
+        st.success(f'Cycle slips detected at indices: {", ".join(map(str, cycle_slips_detected))}')

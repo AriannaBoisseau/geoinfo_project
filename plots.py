@@ -97,12 +97,14 @@ def plot_L1_L2(L1, L2):
     plt.legend()
     return fig
 
-def plot_diff_of_diff(diff1, diff2):
+def plot_diff_of_diff(diff1, diff2, threshold=0.5):
     fig = plt.figure(figsize=(12, 6))
     diff_of_diff = pd.DataFrame()
     diff_of_diff['epoch'] = diff1['epoch']
     diff_of_diff['diff'] = diff1['diff'] - diff2['diff']
     plt.plot(diff_of_diff['epoch'], diff_of_diff['diff'], '-', color='green', linewidth=1, label='Difference of Differences')
+    plt.axhline(y=threshold, color='r', linestyle='--', label='Threshold')
+    plt.axhline(y=-threshold, color='r', linestyle='--')
     plt.xlabel('Time (seconds)')
     plt.ylabel('Distance (meters)')
     plt.legend()
