@@ -131,9 +131,10 @@ def run_add_cycle_slip():
     w1 = compute_wavelength(fundamental_frequency, freq_mult_L1)
     w2 = compute_wavelength(fundamental_frequency, freq_mult_L2)
 
+    # cycle slip applied only to L1, to L2 no cycle slip is applied, but the cycle_slip column is added to L2 for consistency
     L1_dirty = cycle_slip_generator(w1, L1, epoch)
-    # L2_dirty = cycle_slip_generator(w2, L2, epoch)
     L2_dirty = L2.copy()
+    L2_dirty['cycle_slip'] = 0
     L2_dirty.index = L1_dirty.index
 
     st.session_state['cycle_slip_added'] = True
