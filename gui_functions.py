@@ -133,10 +133,15 @@ def run_add_cycle_slip():
 
     L1_dirty = cycle_slip_generator(w1, L1, epoch)
     # L2_dirty = cycle_slip_generator(w2, L2, epoch)
-    L2_dirty = L2
+    L2_dirty = L2.copy()
     L2_dirty.index = L1_dirty.index
 
     st.session_state['cycle_slip_added'] = True
+
+    L1_dirty.to_csv('output/L1_observations_dirty.csv', index=False)
+    L2_dirty.to_csv('output/L2_observations_dirty.csv', index=False)
+    st.session_state['L1_dirty'] = L1_dirty
+    st.session_state['L2_dirty'] = L2_dirty
 
     l1_and_l2 = plot_L1_L2(L1_dirty, L2_dirty)
     plot_diff1, diff1 = plot_differences(L1_dirty, 'blue')
@@ -177,3 +182,20 @@ def show_cycle_slip_section():
         return
     else:
         st.success(f'Cycle slips detected at indices: {", ".join(map(str, cycle_slips_detected))}')
+
+    with open('output/L1_observations_dirty.csv', 'rb') as f1, open('output/L2_observations_dirty.csv', 'rb') as f2:
+        col1, col2 = st.columns(2)
+        with col1:
+            st.download_button(
+                label='Download L1 Observations (with Cycle Slip)',
+                data=f1,
+                file_name='L1_observations_dirty.csv',
+                mime='text/csv'
+            )
+        with col2:
+            st.download_button(
+                label='Download L2 Observations (with Cycle Slip)',
+                data=f2,
+                file_name='L2_observations_dirty.csv',
+                mime='text/csv'
+            )
